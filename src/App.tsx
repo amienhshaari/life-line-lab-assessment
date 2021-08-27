@@ -5,6 +5,7 @@ import CardList from './components/CardList';
 import './App.css';
 import Pagination from './components/Pagination';
 import Modal from './components/Modal';
+import Loader from './components/Loader';
 
 type UserData = {
   dob: {
@@ -70,16 +71,20 @@ const App = (): JSX.Element => {
   };
 
   const onClickNext = () => {
-    setLoading(true);
-    fetchUsers(page + 1)
-      .then((response) => response.json())
-      .then((data) => {
-        setLoading(false);
-        setUsers(data.results);
-        setPage(page + 1);
-        setGoTo((page + 1).toString());
-        window.scroll(0, 0);
-      });
+    const nextPage = Math.min(10000, page + 1);
+
+    if (nextPage !== page) {
+      setLoading(true);
+      fetchUsers(nextPage)
+        .then((response) => response.json())
+        .then((data) => {
+          setLoading(false);
+          setUsers(data.results);
+          setPage(nextPage);
+          setGoTo(nextPage.toString());
+          window.scroll(0, 0);
+        });
+    }
   };
 
   const onClickPrevious = () => {
@@ -104,7 +109,9 @@ const App = (): JSX.Element => {
   };
 
   const onClickGo = () => {
-    const toPage = Math.max(1, parseInt(goTo));
+    const goToPage = parseInt(goTo);
+    let toPage = Math.max(1, goToPage);
+    toPage = Math.min(10000, toPage);
 
     setLoading(true);
     fetchUsers(toPage)
@@ -168,6 +175,7 @@ const App = (): JSX.Element => {
         userData={currentUser}
         onClickBackground={onClickModalBackground}
       />
+      <Loader show={loading} />
     </div>
   );
 };
